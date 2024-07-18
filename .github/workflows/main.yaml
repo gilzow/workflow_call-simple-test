@@ -1,0 +1,13 @@
+name: Primary Workflow
+on:
+  pull_request_target:
+    branches: [main]
+    types: [labeled,opened,reopened,synchronize]
+  workflow_dispatch:
+
+jobs:
+  mainmain:
+    runs-on: ubuntu-latest
+    name: Primary Job from Primary Workflow
+    steps:
+      - run: echo "hello from Primary job in the Primary Workflow"

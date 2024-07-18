@@ -1,0 +1,13 @@
+name: Secondary workflow
+on:
+  workflow_run:
+    workflows: [Primary Workflow]
+    types:
+      - completed
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    name: Setup job on secondary workflow
+    steps:
+      - run: echo "hello from secondary workflow"
