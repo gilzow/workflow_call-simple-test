@@ -11,6 +11,7 @@ jobs:
         id: checkout-repo
         with:
           fetch-depth: 0
+          ref: update
       - id: tests-remotes
         run: |
           git remote -v
