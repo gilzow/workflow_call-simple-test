@@ -1,0 +1,20 @@
+name: Repo playing
+on:
+  workflow_dispatch:
+
+jobs:
+  adjust-repo:
+    runs-on: ubuntu-latest
+    name: check out and an examine the repo
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout-repo
+        with:
+          fetch-depth: 0
+      - id: tests-remotes
+        run: |
+          git remote -v
+      - id: show-branches
+        run: |
+          branches=$(git branch -a)
+          echo $branches;
