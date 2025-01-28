@@ -11,7 +11,6 @@ jobs:
         id: checkout-repo
         with:
           fetch-depth: 0
-          ref: update
       - id: tests-remotes
         run: |
           git remote -v
@@ -19,3 +18,24 @@ jobs:
         run: |
           branches=$(git branch -a)
           echo $branches;
+      - id: checkout-update
+        run: |
+          git fetch --all
+          update=$(git ls-remote --heads origin update)
+          if [ -z "${update}" ]; then
+            echo "update isn't a remote branch"
+            echo "check it out or create it"
+            git switch update 2>/dev/null || git switch -c update
+          else
+            echo "update is a remote branch"
+            echo "check out the remote branch"
+            git switch --track origin/update
+          fi
+          
+          # make sure we're up-to-date with our own main
+          # git pull origin main
+          # add the remote 
+          # git remote add upstream git@git.blah.blah
+          # pull from the remote
+          # git pull upstream main
+          
