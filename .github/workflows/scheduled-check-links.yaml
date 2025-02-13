@@ -92,7 +92,7 @@ jobs:
         id: create-body-message
         if: ${{ steps.run-link-checker.outcome == 'failure' }}
         run: |
-          if [ "${{ steps.check-msg-size.outputs.artifact }}" = "true" ];
+          if [ "${{ steps.check-msg-size.outputs.artifact }}" = "true" ]; then
             artifactAddress="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts"
             bodyMsg=$(printf "Report is too large for an issue comment. Please view the report at \n%s" "${artifactAddress}")
           else
