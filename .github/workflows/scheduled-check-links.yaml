@@ -103,7 +103,7 @@ jobs:
       - name: Upload artifact if applicable
         id: upload-artifact
         if: ${{ steps.run-link-checker.outcome == 'failure' && steps.check-msg-size.outputs.artifact == 'true' }}
-        uses: actions/upload-artifacts@v4
+        uses: actions/upload-artifact@v4
         with:
           name: broken-links
           path: |
