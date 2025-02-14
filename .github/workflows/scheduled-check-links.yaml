@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "::notice::Scanning ${{ inputs.url }} for broken links."
           # if linkchecker exits with a non-zero then it means broken links were found.
-          scan=$(linkchecker ${{ env.scanURL }} -f ./linkchecker/.git/workflows/linkchecker/linkcheckerrc -F xml/utf_8/brokenlinks.xml )
+          scan=$(linkchecker ${{ env.scanURL }} -f ./linkchecker/.github/workflows/linkchecker/linkcheckerrc -F xml/utf_8/brokenlinks.xml )
           result=$?
           if [[ $result -ne 0 ]]; then
             echo "::notice::Broken links detected."
