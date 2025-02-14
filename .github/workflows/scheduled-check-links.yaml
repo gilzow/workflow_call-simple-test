@@ -26,7 +26,7 @@ jobs:
           pip3 install linkchecker
 
       - name: checkout xml to markdown
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: platformsh/linkchecker-xml2md
 
@@ -80,13 +80,23 @@ jobs:
         run: |
           artifact="false"
           sizeOfMessage=$(cat broken_links.md | wc -c)
+          echo "::notice::Size of report: ${sizeOfMessage}"
           # the size of a comment in an issue is 65536
-          if [ "${sizeOfMessage}" -gt 650000 ]; then
+          if [ "${sizeOfMessage}" -gt 65000 ]; then
             # we'll need to store the broken_links.md file as an aritifact
             artifact="true"
           fi
 
           echo "artifact=${artifact}" >> $GITHUB_ENV
+
+      - name: where is everything
+        id: where-is-everything
+        run: |
+          echo "::notice::We are at ${PWD}"
+          echo "::notice::Action path is ${{ github.action_path }}"
+          ls -al ${{ github.action_path }}/broken_links.md
+          ls -al
+          ls -al ${{ github.action_path }}
 
       - name: Upload artifact if applicable
         id: upload-artifact
@@ -107,16 +117,16 @@ jobs:
           script: |
             const { ARTIFACT } = process.env
             var fs = require('fs');
-            // 
+            //
             failMsg = ':bug: Broken links detected'
-            
+
             if ('true' == ARTIFACT) {
               address = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}#artifacts`
-              var bodyMsg = `Visual Regression Testing failed. Please view the report artifact at ${address}`
+              var bodyMsg = `Broken links found. Please view the report artifact at ${address}`
             } else {
               var bodyMsg = fs.readFileSync('broken_links.md','utf8');
             }
-            
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
