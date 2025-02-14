@@ -36,7 +36,7 @@ jobs:
           sparse-checkout: |
             ./.github/workflows/linkchecker/linkcheckerrc
           sparse-checkout-cone-mode: false
-
+          path: linkchecker
       - name: install-parser
         run: |
           pip3 install -r requirements.txt
@@ -64,6 +64,8 @@ jobs:
         run: |
           echo "current contents before we start scan:"
           ls -al
+          echo "what about in the linkchecker directory?"
+          ls -al ./linkchecker
           exit 1
           echo "::notice::Scanning ${{ inputs.url }} for broken links."
           # if linkchecker exits with a non-zero then it means broken links were found.
