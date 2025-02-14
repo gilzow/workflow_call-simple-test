@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            ./.github/workflows/linkchecker/linkcheckerrc
+            linkcheckerrc
           sparse-checkout-cone-mode: false
           path: linkchecker
       - name: install-parser
