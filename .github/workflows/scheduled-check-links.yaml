@@ -63,6 +63,8 @@ jobs:
         shell: bash
         run: |
           echo "::notice::Scanning ${{ inputs.url }} for broken links."
+          echo "before we start, let's see if we have our stuff..."
+          tree ./linkchecker
           # if linkchecker exits with a non-zero then it means broken links were found.
           scan=$(linkchecker ${{ env.scanURL }} -f ./linkchecker/.github/workflows/linkchecker/linkcheckerrc -F xml/utf_8/brokenlinks.xml )
           result=$?
