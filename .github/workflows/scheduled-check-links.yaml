@@ -141,3 +141,6 @@ jobs:
               body: bodyMsg,
               labels: ['broken-links'],
             })
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
