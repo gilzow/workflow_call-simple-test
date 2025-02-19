@@ -9,7 +9,7 @@ on:
         description: 'Site to check for broken links'
         required: true
         type: string
-        default: 'https://docs.platform.sh/'
+        default: ''
 
 jobs:
   determine-links:
@@ -31,7 +31,7 @@ jobs:
               url="[{\"url\":\"${inputURL}\"}]"
             fi
           else
-            echo "::notice::workflow triggered by ${{ github.event }}"
+            echo "::notice::workflow triggered by ${{ github.event_name }}"
           fi
           
           echo "urls=${urls}" >> $GITHUB_OUTPUTS
