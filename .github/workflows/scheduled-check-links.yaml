@@ -27,7 +27,7 @@ jobs:
             echo "::notice::workflow triggered via dispatch"
             inputURL=$(echo "${{ inputs.url }}" | xargs)
             if [ -n "${inputURL}" ]; then
-              urls="[\"${inputURL}\"}]"
+              urls="[\"${inputURL}\"]"
             fi
           else
             echo "::notice::workflow not triggered by dispatch, but by ${{ github.event_name }}"
