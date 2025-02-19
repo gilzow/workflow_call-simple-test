@@ -7,7 +7,6 @@ on:
     inputs:
       url:
         description: 'Site to check for broken links'
-        required: true
         type: string
         default: ''
 
@@ -25,10 +24,10 @@ jobs:
         run: |
           urls="[{\"url\":\"https://docs.platform.sh\"},{\"url\":\"https://docs.upsun.com\"}]"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
-            echo "::notice::workflow triggered via dispatch
+            echo "::notice::workflow triggered via dispatch"
             inputURL=$(echo "${{ inputs.url }}" | xargs)
             if [ -n "${inputURL}" ]; then
-              url="[{\"url\":\"${inputURL}\"}]"
+              urls="[{\"url\":\"${inputURL}\"}]"
             fi
           else
             echo "::notice::workflow triggered by ${{ github.event_name }}"
