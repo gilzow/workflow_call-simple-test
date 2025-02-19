@@ -22,7 +22,7 @@ jobs:
           echo "::notice::Value given to me for url is ${{ inputs.url }}"
       - id: determine-url
         run: |
-          urls="[\"https://docs.platform.sh\"},\"https://docs.upsun.com\"}]"
+          urls="[\"https://docs.platform.sh\",\"https://docs.upsun.com\"}]"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
             echo "::notice::workflow triggered via dispatch"
             inputURL=$(echo "${{ inputs.url }}" | xargs)
