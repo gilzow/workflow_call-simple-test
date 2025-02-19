@@ -12,9 +12,37 @@ on:
         default: 'https://docs.platform.sh/'
 
 jobs:
+  determine-links:
+    name: determine which urls to use
+    runs-on: ubuntu-latest
+    outputs:
+      urls: ${{ steps.determine-url.outputs.urls }}
+    steps:
+      - id: verify-input
+        run:
+          echo "::notice::Value given to me for url is ${{ inputs.url }}"
+      - id: determine-url
+        run: |
+          urls="[{\"url\":\"https://docs.platform.sh\"},{\"url\":\"https://docs.upsun.com\"}]"
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            echo "::notice::workflow triggered via dispatch
+            inputURL=$(echo "${{ inputs.url }}" | xargs)
+            if [ -n "${inputURL}" ]; then
+              url="[{\"url\":\"${inputURL}\"}]"
+            fi
+          else
+            echo "::notice::workflow triggered by ${{ github.event }}"
+          fi
+          
+          echo "urls=${urls}" >> $GITHUB_OUTPUTS
+
   check-links:
     name: Check links
     runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.determine-links.outputs.urls) }}
+    needs:
+      - determine-links
     steps:
       - uses: actions/setup-python@v4
         with:
@@ -41,30 +69,30 @@ jobs:
         run: |
           pip3 install -r requirements.txt
 
-      - name: Set URL to scan
-        id: set-url
-        shell: bash
-        run: |
-          # If this is a workflow dispatch, then use what was entered.
-          # If not, then use the repository variable SCAN_URL if it is set
-          # if not, fall back to the hard-coded default
-          scanURL="https://docs.platform.sh/"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            scanURL="${{ inputs.url }}"
-          elif [[ -n "${{ vars.SCAN_URL }}" ]]; then
-            scanURL="${{ vars.SCAN_URL }}"
-          fi
-
-          echo "scanURL=${scanURL}" >> "$GITHUB_ENV"
+#      - name: Set URL to scan
+#        id: set-url
+#        shell: bash
+#        run: |
+#          # If this is a workflow dispatch, then use what was entered.
+#          # If not, then use the repository variable SCAN_URL if it is set
+#          # if not, fall back to the hard-coded default
+#          scanURL="https://docs.platform.sh/"
+#          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+#            scanURL="${{ inputs.url }}"
+#          elif [[ -n "${{ vars.SCAN_URL }}" ]]; then
+#            scanURL="${{ vars.SCAN_URL }}"
+#          fi
+#
+#          echo "scanURL=${scanURL}" >> "$GITHUB_ENV"
 
       - name: Run linkchecker
         id: run-link-checker
         continue-on-error: true
         shell: bash
         run: |
-          echo "::notice::Scanning ${{ inputs.url }} for broken links."
+          echo "::notice::Scanning ${{ matrix.url }} for broken links."
           # if linkchecker exits with a non-zero then it means broken links were found.
-          scan=$(linkchecker ${{ env.scanURL }} -f ./linkchecker/linkcheckerrc -F xml/utf_8/brokenlinks.xml )
+          scan=$(linkchecker ${{ matrix.url }} -f ./linkchecker/linkcheckerrc -F xml/utf_8/brokenlinks.xml )
           result=$?
           if [[ $result -ne 0 ]]; then
             echo "::notice::Broken links detected."
@@ -123,7 +151,7 @@ jobs:
             const { ARTIFACT } = process.env
             var fs = require('fs');
             //
-            failMsg = ':bug: Broken links detected'
+            failMsg = ':bug: Broken links detected for ${{ matrix.url }}'
 
             if ('true' == ARTIFACT) {
               address = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}#artifacts`
