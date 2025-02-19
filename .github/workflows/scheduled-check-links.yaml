@@ -33,7 +33,7 @@ jobs:
             echo "::notice::workflow not triggered by dispatch, but by ${{ github.event_name }}"
           fi
           echo "::notice::URLs is set to ${urls}"
-          echo "urls=${urls}" >> $GITHUB_OUTPUTS
+          echo "urls=${urls}" >> $GITHUB_OUTPUT
 
   check-links:
     name: Check links
