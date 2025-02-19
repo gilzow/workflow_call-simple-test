@@ -22,12 +22,12 @@ jobs:
           echo "::notice::Value given to me for url is ${{ inputs.url }}"
       - id: determine-url
         run: |
-          urls="[{\"url\":\"https://docs.platform.sh\"},{\"url\":\"https://docs.upsun.com\"}]"
+          urls="[\"https://docs.platform.sh\"},\"https://docs.upsun.com\"}]"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
             echo "::notice::workflow triggered via dispatch"
             inputURL=$(echo "${{ inputs.url }}" | xargs)
             if [ -n "${inputURL}" ]; then
-              urls="[{\"url\":\"${inputURL}\"}]"
+              urls="[\"${inputURL}\"}]"
             fi
           else
             echo "::notice::workflow not triggered by dispatch, but by ${{ github.event_name }}"
@@ -39,7 +39,8 @@ jobs:
     name: Check links
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJSON(needs.determine-links.outputs.urls) }}
+      matrix:
+        url: ${{ fromJSON(needs.determine-links.outputs.urls) }}
     needs:
       - determine-links
     steps:
