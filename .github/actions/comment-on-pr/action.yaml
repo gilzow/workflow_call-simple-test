@@ -1,0 +1,81 @@
+name: Comment on PR
+description: Adds a comment to a PR with links to all the pages that have changed in this PR
+inputs:
+  pr_url:
+    description: The URL for the PR environment
+    required: true
+  pr:
+    description: The PR we're working on
+    default: ${{ github.event.number }}
+  head_sha:
+    description: The head sha of the PR
+    default: ${{ github.event.pull_request.head.sha }}
+  base_sha:
+    description: The base sha of the PR
+    default: ${{ github.event.pull_request.base.sha }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v41
+      with:
+        sha: ${{ inputs.head_sha }}
+        base_sha: ${{ inputs.base_sha }}
+    # Create a list of relevant changed pages
+    - name: Get list of changed files
+      id: get-files
+      shell: bash
+      env:
+        ENV_URL: ${{ inputs.pr_url }}
+      run: |
+        files=()
+        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          # Rewrite all Markdown files in the source to be links in the final environment
+          if [[ $file = "dev/content/"*".md" ]]; then
+            # Remove file extension
+            page=${file/.md/.html}
+        
+            # Remove initial directory
+            page=${page/"dev/content/"/}
+            # Shift index pages up a level
+            page=${page/"/_index.html"/".html"}
+        
+            files+=("$ENV_URL$page")
+          fi
+        done
+        
+        # If there are changed files , return a list
+        # Using "\n" here creates problems in passing data to the next step, so replace there instead
+        if (( ${#files[@]} != 0 )); then
+          echo $(printf "||%s" "${files[@]}")
+          echo changed_files=$(printf "||%s" "${files[@]}") >> $GITHUB_OUTPUT
+        else
+          echo changed_files="" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Comment with links
+      id: comment-with-changes
+      shell: bash
+      if: ${{ steps.get-files.outputs.changed_files != '' }}
+      env:
+        PAGES: ${{ steps.get-files.outputs.changed_files }}
+      run: |
+        echo -e "Your PR environment has successfully deployed. :rocket:\n\nSee the changed pages:\n\n<details>\n<summary>PR changes</summary><br/>\n\n${PAGES//||/'\n- [ ] '}\n\n</details>" > pr_comment.txt
+
+    - name: Comment without links
+      id: comment-without-changes
+      shell: bash
+      if: ${{ steps.get-files.outputs.changed_files  == '' }}
+      env:
+        ENV_URL: ${{ inputs.pr_url }}
+        PR_NUM: ${{ inputs.pr }}
+      run: |
+        echo -e "Your PR environment has successfully deployed. :rocket:\n\nSee the site:\n\n- [PR-${PR_NUM} URL]($ENV_URL)" > pr_comment.txt
+
+    - name: Post PR comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        number: ${{ steps.pr_number.outputs.pr_number }}
+        path: pr_comment.txt

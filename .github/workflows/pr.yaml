@@ -1,0 +1,13 @@
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/comment-on-pr
+        with:
+          pr_url: "https://gilzow.com/"
