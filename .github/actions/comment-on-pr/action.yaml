@@ -62,7 +62,7 @@ runs:
       env:
         PAGES: ${{ steps.get-files.outputs.changed_files }}
       run: |
-        echo -e "Your PR environment has successfully deployed. :rocket:\n\nSee the changed pages:\n\n<details>\n<summary>PR changes</summary><br/>\n\n${PAGES//||/'\n- [ ] '}\n\n</details>" > pr_comment.txt
+        echo -e "Your PR environment has successfully deployed. :rocket:\n\nSee the changed pages:\n\n<details>\n<summary>PR changes</summary><br/>\n\n${PAGES//||/'\n- * '}\n\n</details>" > pr_comment.txt
 
     - name: Comment without links
       id: comment-without-changes
