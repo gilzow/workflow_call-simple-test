@@ -1,0 +1,44 @@
+name: Trigger on All Checks Passing
+on:
+  check_run:
+    types: [completed]
+
+jobs:
+  all-checks-passed:
+    # Only run if the check_run that triggered this was successful
+    if: github.event.check_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Overall Status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The SHA of the commit that was just checked
+          SHA: ${{ github.event.check_run.head_sha }}
+        run: |
+          echo "Checking all statuses for SHA: $SHA..."
+
+          # Fetch all check runs for this commit
+          # We filter out "queued" or "in_progress" checks
+          # We also exclude this specific workflow (Trigger on All Checks Passing) to avoid a circular dependency
+          PENDING_CHECKS=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs \
+            --jq '.check_runs | map(select(.status != "completed" and .name != "all-checks-passed")) | length')
+
+          if [ "$PENDING_CHECKS" -gt 0 ]; then
+            echo "There are still $PENDING_CHECKS checks pending. Exiting gracefully..."
+            exit 0
+          fi
+
+          # Now check if any completed checks failed
+          FAILED_CHECKS=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs \
+            --jq '.check_runs | map(select(.conclusion == "failure" or .conclusion == "timed_out")) | length')
+
+          if [ "$FAILED_CHECKS" -gt 0 ]; then
+            echo "Found $FAILED_CHECKS failed checks. Requirements not met."
+            exit 1
+          fi
+
+          echo "All checks have passed! Proceeding with final tasks..."
+
+      - name: Final Task
+        run: |
+          echo "Put the code you want to run only after all checks pass here."

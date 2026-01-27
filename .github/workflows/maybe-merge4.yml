@@ -1,0 +1,32 @@
+name: maybe-merge using check_run
+on:
+  check_run:
+    types: [completed]
+
+jobs:
+  run_when_green:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Are we finished?
+        id: are-we-finished
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+
+        run: |
+          # Use gh CLI to check if all checks are successful
+          # This requires logic to filter out the current running check
+         STATUS=$(gh api repos/${{ github.repository }}/commits/${{ github.event.check_run.head_sha }}/check-runs --jq '.check_runs | map(select(.status != "completed")) | length')
+         if [ "$STATUS" -ne 0 ]; then
+          echo "Other checks are still running. Exiting..."
+          exit 0
+         fi
+
+          echo "All statuses are success; continue..."
+          echo "state=success" >> $GITHUB_OUTPUT
+      - name: Run now that we have the right state
+        id: yeah-boys
+        if: steps.are-we-finished.outputs.state == 'success'
+        run: |
+          echo "::notice::The status checks have completed and I technically can continue"
