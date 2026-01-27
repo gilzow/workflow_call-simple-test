@@ -1,6 +1,7 @@
-name: maybe-merge.yaml
+name: maybe-merge using check_suite
 on:
-  status:
+  check_suite:
+    types: [completed]
 
 jobs:
   run_when_green:

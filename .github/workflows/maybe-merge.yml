@@ -1,0 +1,31 @@
+name: maybe-merge using status
+on:
+  status:
+
+jobs:
+  run_when_green:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Are we finished?
+        id: are-we-finished
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+
+        run: |
+          # Combined status endpoint: /repos/{owner}/{repo}/commits/{ref}/status
+          state=$(gh api "repos/${REPO}/commits/${SHA}/status" --jq '.state')
+          echo "combined state: $state"
+          if [ "$state" != "success" ]; then
+            echo "Not all statuses successful yet; exiting."
+            exit 0
+          fi
+
+          echo "All statuses are success; continue..."
+          echo "state=${state}" >> $GITHUB_OUTPUT
+      - name: Run now that we have the right state
+        id: yeah-boys
+        if: steps.are-we-finished.outputs.state == 'success'
+        run: |
+          echo "::notice::The status checks have completed and I technically can continue"
